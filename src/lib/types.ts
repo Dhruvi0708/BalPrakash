@@ -19,16 +19,23 @@ export interface Area {
   is_active: boolean;
 }
 
-export interface Family {
+export interface Issue {
   id: number;
-  parent_name: string;
-  phone: string;
-  alt_phone: string | null;
-  email: string | null;
-  address: string | null;
-  area_id: number | null;
-  access_code: string;
-  source: RecordSource;
+  language: Language;
+  seq_no: number;
+  issue_month: number | null;
+  issue_year: number | null;
+  title: string | null;
+}
+
+export interface Distribution {
+  id: number;
+  issue_id: number;
+  subscription_id: number;
+  status: 'pending' | 'self' | 'mediator';
+  collected_by_name: string | null;
+  mediator_relation: string | null;
+  handed_on: string | null;
 }
 
 export interface Subscription {
@@ -45,15 +52,17 @@ export interface Subscription {
 
 export interface Member {
   id: number;
-  family_id: number;
   full_name: string;
+  phone: string;
   category: Category;
+  area_id: number | null;
+  address: string | null;
   dob: string | null;
   source: RecordSource;
 }
 
 export interface MemberRow extends Member {
-  families: Pick<Family, 'parent_name' | 'phone' | 'access_code'> & { areas: Pick<Area, 'name'> | null };
+  areas: Pick<Area, 'name'> | null;
   subscriptions: Subscription[];
 }
 

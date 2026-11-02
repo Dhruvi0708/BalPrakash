@@ -13,20 +13,19 @@ import {
 } from '../lib/types';
 
 const TEMPLATE: string[][] = [
-  ['parent_name', 'phone', 'area', 'address', 'child_name', 'category', 'dob', 'language', 'plan_years', 'issues_remaining', 'receipt_no', 'amount', 'payment_mode'],
-  ['Ramesh Patel', '9876543210', 'Mayur Vihar', 'B-12, Mayur Vihar Ph 1', 'Aarav Patel', 'balak', '2015-06-21', 'gujarati', '1', '', 'R-1021', '150', 'cash'],
-  ['Ramesh Patel', '9876543210', 'Mayur Vihar', '', 'Diya Patel', 'balika', '2017-02-03', 'english', '3', '10', 'R-1022', '400', 'upi'],
+  ['name', 'phone', 'category', 'area', 'address', 'dob', 'language', 'plan_years', 'issues_remaining', 'receipt_no', 'amount', 'payment_mode'],
+  ['Aarav Patel', '9876543210', 'balak', 'Mayur Vihar', 'B-12, Mayur Vihar Ph 1', '2015-06-21', 'gujarati', '1', '', 'R-1021', '150', 'cash'],
+  ['Diya Shah', '9812345678', 'balika', 'Dwarka', '', '2017-02-03', 'english', '3', '10', 'R-1022', '400', 'upi'],
 ];
 
 const SOURCE_LABEL: Record<RecordSource, string> = { online: 'Online form', manual: 'Added by hand', import: 'CSV import' };
 
 const emptyForm = {
-  parent_name: '',
+  name: '',
   phone: '',
+  category: '' as Category | '',
   area: '',
   address: '',
-  child_name: '',
-  category: '' as Category | '',
   dob: '',
   language: '',
   plan_years: '1',
@@ -55,7 +54,7 @@ export default function Members() {
   async function load() {
     const { data, error } = await supabase
       .from('members')
-      .select('*, families(parent_name, phone, access_code, areas(name)), subscriptions(*)')
+      .select('*, areas(name), subscriptions(*)')
       .order('created_at', { ascending: false })
       .limit(1000);
     if (error) setError(error.message);
@@ -75,12 +74,7 @@ export default function Members() {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter(
-      (r) =>
-        (!category || r.category === category) &&
-        (!q ||
-          r.full_name.toLowerCase().includes(q) ||
-          r.families.parent_name.toLowerCase().includes(q) ||
-          r.families.phone.includes(q)),
+      (r) => (!category || r.category === category) && (!q || r.full_name.toLowerCase().includes(q) || r.phone.includes(q)),
     );
   }, [rows, search, category]);
 
@@ -112,8 +106,8 @@ export default function Members() {
     e.preventDefault();
     const res = await runImport([form], 'manual');
     if (res && res.errors.length === 0) {
-      // Keep the parent details so siblings can be added quickly.
-      setForm({ ...form, child_name: '', dob: '', receipt_no: '', amount: '', issues_remaining: '' });
+      // Keep phone and area so siblings sharing a number can be added quickly.
+      setForm({ ...form, name: '', dob: '', receipt_no: '', amount: '', issues_remaining: '' });
     }
   }
 
@@ -126,13 +120,13 @@ export default function Members() {
         <div>
           <h1 className="text-xl font-semibold">Balaks & Balikas</h1>
           <p className="text-sm text-slate-500">
-            Records added by hand, by CSV upload, or (once registration opens) through the online form all appear here.
+            Each person is registered with their name and mobile number. When they sign up with that number, they see their own books.
           </p>
         </div>
         {head && (
           <div className="flex flex-wrap gap-2">
             <button type="button" className="btn-primary" onClick={() => setShowForm(!showForm)}>
-              {showForm ? 'Close form' : '+ Add member'}
+              {showForm ? 'Close form' : '+ Add person'}
             </button>
             <label className="btn-outline cursor-pointer">
               {busy ? 'Uploading…' : 'Upload CSV'}
@@ -147,14 +141,22 @@ export default function Members() {
 
       {head && showForm && (
         <form onSubmit={addManual} className="card grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2 font-medium">Parent / family</div>
           <div>
-            <label className="label">Parent name *</label>
-            <input className="input" value={form.parent_name} onChange={set('parent_name')} required />
+            <label className="label">Name *</label>
+            <input className="input" value={form.name} onChange={set('name')} required />
           </div>
           <div>
             <label className="label">Mobile number *</label>
             <input className="input" inputMode="numeric" value={form.phone} onChange={set('phone')} required />
+          </div>
+          <div>
+            <label className="label">Category *</label>
+            <select className="input" value={form.category} onChange={set('category')} required>
+              <option value="">Select</option>
+              {allowedCategories.map((c) => (
+                <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="label">Area</label>
@@ -168,21 +170,6 @@ export default function Members() {
           <div>
             <label className="label">Address</label>
             <input className="input" value={form.address} onChange={set('address')} />
-          </div>
-
-          <div className="sm:col-span-2 mt-2 font-medium">Child</div>
-          <div>
-            <label className="label">Child name *</label>
-            <input className="input" value={form.child_name} onChange={set('child_name')} required />
-          </div>
-          <div>
-            <label className="label">Category *</label>
-            <select className="input" value={form.category} onChange={set('category')} required>
-              <option value="">Select</option>
-              {allowedCategories.map((c) => (
-                <option key={c} value={c}>{CATEGORY_LABEL[c]}</option>
-              ))}
-            </select>
           </div>
           <div>
             <label className="label">Date of birth</label>
@@ -228,7 +215,7 @@ export default function Members() {
             </select>
           </div>
           <div className="sm:col-span-2">
-            <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save member'}</button>
+            <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'Saving…' : 'Save person'}</button>
           </div>
         </form>
       )}
@@ -236,7 +223,7 @@ export default function Members() {
       {result && (
         <div className={`rounded-lg px-4 py-3 text-sm ${result.errors.length ? 'bg-amber-50 text-amber-800' : 'bg-green-50 text-green-700'}`}>
           <div>
-            {result.created_members} new member(s), {result.existing_members} already existed, {result.created_subscriptions} subscription(s) added.
+            {result.created_members} new person(s), {result.existing_members} already existed, {result.created_subscriptions} subscription(s) added.
           </div>
           {result.errors.length > 0 && (
             <ul className="mt-2 list-disc pl-5">
@@ -250,7 +237,7 @@ export default function Members() {
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
       <div className="flex flex-wrap gap-2">
-        <input className="input max-w-xs" placeholder="Search name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input max-w-xs" placeholder="Search name or mobile" value={search} onChange={(e) => setSearch(e.target.value)} />
         {allowedCategories.length > 1 && (
           <select className="input w-auto" value={category} onChange={(e) => setCategory(e.target.value as Category | '')}>
             <option value="">All</option>
@@ -265,11 +252,10 @@ export default function Members() {
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
-              <th className="px-4 py-3">Child</th>
-              <th className="px-4 py-3">Parent</th>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Mobile</th>
               <th className="px-4 py-3">Area</th>
               <th className="px-4 py-3">Subscriptions</th>
-              <th className="px-4 py-3">Family code</th>
               <th className="px-4 py-3">Added via</th>
             </tr>
           </thead>
@@ -280,11 +266,8 @@ export default function Members() {
                   <div className="font-medium">{r.full_name}</div>
                   <div className="text-xs text-slate-500">{CATEGORY_LABEL[r.category]}</div>
                 </td>
-                <td className="px-4 py-3">
-                  <div>{r.families.parent_name}</div>
-                  <div className="text-xs text-slate-500">{r.families.phone}</div>
-                </td>
-                <td className="px-4 py-3">{r.families.areas?.name ?? '—'}</td>
+                <td className="px-4 py-3">{r.phone}</td>
+                <td className="px-4 py-3">{r.areas?.name ?? '—'}</td>
                 <td className="px-4 py-3">
                   {r.subscriptions.length === 0 && <span className="text-slate-400">None</span>}
                   {r.subscriptions.map((s) => (
@@ -294,13 +277,12 @@ export default function Members() {
                     </div>
                   ))}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs">{r.families.access_code}</td>
                 <td className="px-4 py-3 text-xs text-slate-500">{SOURCE_LABEL[r.source]}</td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">No records yet.</td>
+                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">No records yet.</td>
               </tr>
             )}
           </tbody>

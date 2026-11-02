@@ -51,7 +51,7 @@ export default function Areas() {
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-semibold">Areas / sabhas</h1>
-        <p className="text-sm text-slate-500">Used to group families and split distribution lists.</p>
+        <p className="text-sm text-slate-500">Used to group people and split distribution lists.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

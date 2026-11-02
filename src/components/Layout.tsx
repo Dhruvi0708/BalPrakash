@@ -18,7 +18,7 @@ export default function Layout() {
     { to: '/members', label: 'Balaks & Balikas', show: isStaff(profile) },
     { to: '/areas', label: 'Areas', show: isHead(profile) },
     { to: '/users', label: 'Team & roles', show: profile?.role === 'main_head' },
-    { to: '/my-family', label: 'My family', show: true },
+    { to: '/my-books', label: 'My books', show: true },
   ];
 
   const linkClass = ({ isActive }: { isActive: boolean }) =>

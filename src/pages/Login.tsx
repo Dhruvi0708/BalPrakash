@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
-import { isValidPhone, normalizePhone, phoneToEmail } from '../lib/phone';
+import { isValidPhone, phoneToEmail } from '../lib/phone';
 
 type Mode = 'signin' | 'signup';
 
@@ -40,7 +40,7 @@ export default function Login() {
         : await supabase.auth.signUp({
             email,
             password,
-            options: { data: { full_name: name.trim(), phone: normalizePhone(phone) } },
+            options: { data: { full_name: name.trim() } },
           });
     setBusy(false);
     if (error) {
@@ -83,7 +83,7 @@ export default function Login() {
           <form onSubmit={submit} className="space-y-3">
             {mode === 'signup' && (
               <div>
-                <label className="label" htmlFor="name">Your name (parent)</label>
+                <label className="label" htmlFor="name">Your name</label>
                 <input id="name" className="input" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
             )}

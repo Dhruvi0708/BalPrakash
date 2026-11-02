@@ -13,7 +13,7 @@ npm run dev
 
 ## Supabase setup (one time)
 
-1. Run `supabase/migrations/0001_init.sql` in the Supabase SQL editor (or `supabase db push`).
+1. Run `supabase/setup.sql` in the Supabase SQL editor (all migrations combined), or `supabase db push`.
 2. **Authentication → Providers → Email**: keep enabled, turn **Confirm email OFF**.
    Phone + password login uses a private placeholder email per phone number, so no SMS is ever sent.
 3. **Authentication → Providers → Google**: enable and paste the Google OAuth client ID/secret.
@@ -33,20 +33,21 @@ npm run dev
 | Main Head | Everything, both Balak and Balika. Manages roles and registration windows. |
 | Balika Head | Only Balika records. Adds/imports Balikas, records Balika stock. |
 | Volunteer | Only their assigned side. Marks distribution (later phase). |
-| Subscriber | Only their linked family. |
+| Subscriber | Only the records registered with their own mobile number. |
 
 The Balak/Balika separation is enforced by row-level security in the database.
 
 ## Adding data
 
 - **Areas**: Areas page → add one, or upload a CSV with a `name` column.
-- **Existing balaks/balikas**: Members page → *+ Add member*, or *Upload CSV* (download the template first).
-  One row per child; rows with the same phone go into the same family. Re-uploading the same sheet doesn't create duplicates.
+- **Existing balaks/balikas**: Members page → *+ Add person*, or *Upload CSV* (download the template first).
+  One row per person, identified by **name + mobile number**. Re-uploading the same sheet doesn't create duplicates.
   For existing subscribers part-way through a plan, fill `issues_remaining`.
 - **Online registration** (Phase 2) writes into the same tables, marked *Online form*.
 
-Each family gets a 6-letter **family code**. Parents link their login to their family on **My family** with
-their phone number + that code.
+A person who signs up with the **same mobile number** sees their own books on **My books**: which issues were
+collected, when, and by whom (self or mediator), plus issues ready to collect and still to come.
+People who share a number (e.g. siblings) all appear under that login.
 
 ## Issue numbering
 

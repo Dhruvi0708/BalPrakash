@@ -6,7 +6,7 @@ import Areas from './pages/Areas';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Members from './pages/Members';
-import MyFamily from './pages/MyFamily';
+import MyBooks from './pages/MyBooks';
 import Users from './pages/Users';
 
 function AppRoutes() {
@@ -21,11 +21,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={staff ? <Dashboard /> : <Navigate to="/my-family" replace />} />
+        <Route index element={staff ? <Dashboard /> : <Navigate to="/my-books" replace />} />
         <Route path="members" element={staff ? <Members /> : <Navigate to="/" replace />} />
         <Route path="areas" element={isHead(profile) ? <Areas /> : <Navigate to="/" replace />} />
         <Route path="users" element={profile?.role === 'main_head' ? <Users /> : <Navigate to="/" replace />} />
-        <Route path="my-family" element={<MyFamily />} />
+        <Route path="my-books" element={<MyBooks />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
