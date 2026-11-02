@@ -1,0 +1,35 @@
+# Free Supabase has no automatic backups. This dumps the database every Sunday and keeps
+# the file as a workflow artifact for 90 days. Keep this repository PRIVATE.
+name: Weekly database backup
+
+on:
+  schedule:
+    - cron: '30 20 * * 0' # Monday 02:00 IST
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump database
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          stamp=$(date -u +%Y-%m-%d)
+          pg_dump "$DATABASE_URL" --schema=public --schema=auth --no-owner --no-privileges \
+            | gzip > "balprakash-$stamp.sql.gz"
+          ls -lh balprakash-*.sql.gz
+
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: balprakash-*.sql.gz
+          retention-days: 90
