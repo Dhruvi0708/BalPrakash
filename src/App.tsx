@@ -2,14 +2,17 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, isHead, isStaff, useAuth } from './auth/AuthProvider';
 import Layout from './components/Layout';
 import { supabaseConfigured } from './lib/supabase';
+import Approvals from './pages/Approvals';
 import Areas from './pages/Areas';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Members from './pages/Members';
 import MyBooks from './pages/MyBooks';
+import Register from './pages/Register';
+import RegistrationWindows from './pages/RegistrationWindows';
 import Users from './pages/Users';
 
-function AppRoutes() {
+function SignedInRoutes() {
   const { session, profile, loading } = useAuth();
 
   if (loading) {
@@ -18,13 +21,17 @@ function AppRoutes() {
   if (!session) return <Login />;
 
   const staff = isStaff(profile);
+  const head = isHead(profile);
+  const main = profile?.role === 'main_head';
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route index element={staff ? <Dashboard /> : <Navigate to="/my-books" replace />} />
         <Route path="members" element={staff ? <Members /> : <Navigate to="/" replace />} />
-        <Route path="areas" element={isHead(profile) ? <Areas /> : <Navigate to="/" replace />} />
-        <Route path="users" element={profile?.role === 'main_head' ? <Users /> : <Navigate to="/" replace />} />
+        <Route path="approvals" element={head ? <Approvals /> : <Navigate to="/" replace />} />
+        <Route path="areas" element={head ? <Areas /> : <Navigate to="/" replace />} />
+        <Route path="registration" element={main ? <RegistrationWindows /> : <Navigate to="/" replace />} />
+        <Route path="users" element={main ? <Users /> : <Navigate to="/" replace />} />
         <Route path="my-books" element={<MyBooks />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
@@ -48,7 +55,11 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <Routes>
+          {/* The registration form is public: no login needed. */}
+          <Route path="/register" element={<Register />} />
+          <Route path="/*" element={<SignedInRoutes />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

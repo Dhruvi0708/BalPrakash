@@ -16,6 +16,8 @@ export default function Layout() {
   const items: NavItem[] = [
     { to: '/', label: 'Dashboard', show: isStaff(profile) },
     { to: '/members', label: 'Balaks & Balikas', show: isStaff(profile) },
+    { to: '/approvals', label: 'Approvals', show: isHead(profile) },
+    { to: '/registration', label: 'Registration', show: profile?.role === 'main_head' },
     { to: '/areas', label: 'Areas', show: isHead(profile) },
     { to: '/users', label: 'Team & roles', show: profile?.role === 'main_head' },
     { to: '/my-books', label: 'My books', show: true },

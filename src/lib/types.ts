@@ -48,7 +48,24 @@ export interface Subscription {
   payment_status: 'pending' | 'verified' | 'rejected';
   status: 'pending' | 'active' | 'expired' | 'cancelled';
   receipt_no: string | null;
+  amount: number | null;
+  payment_mode: PaymentMode | null;
+  source: RecordSource;
+  review_note: string | null;
+  created_at: string;
 }
+
+export type PaymentMode = 'cash' | 'upi' | 'cheque' | 'other';
+
+export interface RegistrationWindow {
+  id: number;
+  title: string;
+  opens_at: string;
+  closes_at: string;
+  instructions: string | null;
+}
+
+export const PAYMENT_MODE_LABEL: Record<PaymentMode, string> = { cash: 'Cash', upi: 'UPI', cheque: 'Cheque', other: 'Other' };
 
 export interface Member {
   id: number;

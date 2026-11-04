@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
+import { formatDate } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { CATEGORY_LABEL, LANGUAGE_LABEL, type Distribution, type Issue, type Member, type Subscription } from '../lib/types';
 
@@ -12,10 +13,6 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 function issueLabel(issue: Issue): string {
   const when = issue.issue_month && issue.issue_year ? ` · ${MONTHS[issue.issue_month - 1]} ${issue.issue_year}` : '';
   return issue.title ? `${issue.title}${when}` : `Issue ${issue.seq_no}${when}`;
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function MyBooks() {

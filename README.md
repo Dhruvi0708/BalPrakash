@@ -43,7 +43,10 @@ The Balak/Balika separation is enforced by row-level security in the database.
 - **Existing balaks/balikas**: Members page → *+ Add person*, or *Upload CSV* (download the template first).
   One row per person, identified by **name + mobile number**. Re-uploading the same sheet doesn't create duplicates.
   For existing subscribers part-way through a plan, fill `issues_remaining`.
-- **Online registration** (Phase 2) writes into the same tables, marked *Online form*.
+- **Online registration**: the Main Head opens a window on **Registration** (dates + payment instructions) and shares
+  the public link `/register`. Anyone can register without logging in while it's open. Entries are marked
+  *Online form* and wait in **Approvals**; the right head (Balak or Balika) checks the payment and approves or rejects.
+  Approved subscriptions start from the next issue unless the head picks a start issue.
 
 A person who signs up with the **same mobile number** sees their own books on **My books**: which issues were
 collected, when, and by whom (self or mediator), plus issues ready to collect and still to come.

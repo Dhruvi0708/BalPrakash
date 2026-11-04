@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { isValidPhone, phoneToEmail } from '../lib/phone';
 
@@ -135,6 +136,9 @@ export default function Login() {
             <p className="text-center text-xs text-slate-400">Forgot password? Contact your Bal Prakash head.</p>
           )}
         </div>
+        <Link to="/register" className="mt-4 block rounded-xl border border-saffron-100 bg-white px-4 py-3 text-center text-sm font-medium text-saffron-700 hover:bg-saffron-50">
+          New to Bal Prakash? Register here →
+        </Link>
       </div>
     </div>
   );

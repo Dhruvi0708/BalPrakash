@@ -57,6 +57,16 @@ export default function Dashboard() {
           ))}
       </div>
 
+      {isHead(profile) && (counts?.pendingApproval ?? 0) > 0 && (
+        <div className="card flex flex-wrap items-center justify-between gap-3 border-saffron-100 bg-saffron-50">
+          <div>
+            <div className="font-medium">{counts?.pendingApproval} registration(s) waiting for approval</div>
+            <div className="text-sm text-slate-500">Check the payment and approve or reject.</div>
+          </div>
+          <Link to="/approvals" className="btn-primary">Review now</Link>
+        </div>
+      )}
+
       {isHead(profile) && (
         <div className="card flex flex-wrap items-center justify-between gap-3">
           <div>
