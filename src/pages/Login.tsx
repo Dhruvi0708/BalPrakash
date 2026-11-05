@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
 import { BookBuddy, Cloud, Doodles, KidReader, Sun } from '../components/Art';
 import { RAINBOW } from '../components/Layout';
 import { LangSwitch, useI18n } from '../lib/i18n';
@@ -137,12 +136,9 @@ export default function Login() {
             {mode === 'signin' && <p className="text-center text-xs font-semibold text-ink-400">{t('forgot')}</p>}
           </div>
 
-          <Link
-            to="/register"
-            className="mt-4 flex items-center justify-center gap-2 rounded-full border-2 border-white bg-gradient-to-r from-sunny-300 to-sunny-400 px-4 py-3 text-center font-extrabold text-ink-800 shadow-pop transition hover:brightness-105"
-          >
-            📝 {t('registerCta')} →
-          </Link>
+          <p className="mt-4 rounded-3xl border-2 border-white bg-sunny-100 px-4 py-3 text-center text-sm font-bold text-ink-700 shadow-pop">
+            👋 {t('teamHint')}
+          </p>
         </div>
       </div>
     </div>

@@ -129,8 +129,7 @@ export const STATUS_TONE: Record<string, Tone> = {
   pending: 'sunny',
   expired: 'grape',
   cancelled: 'bubble',
-  self: 'leaf',
-  mediator: 'sky',
-  open: 'sunny',
-  resolved: 'leaf',
+  given: 'leaf',
+  given_to_volunteer: 'sky',
+  delivered: 'grape',
 };

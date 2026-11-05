@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { isHead, isStaff, useAuth } from '../auth/AuthProvider';
-import { LangSwitch, useI18n } from '../lib/i18n';
+import { isHead, isMainHead, isVolunteer, useAuth } from '../auth/AuthProvider';
+import { useI18n } from '../lib/i18n';
 import { pendingCount, subscribeQueue } from '../lib/offline';
 import { ROLE_LABEL } from '../lib/types';
 import { BookBuddy } from './Art';
@@ -33,22 +33,22 @@ export default function Layout() {
     };
   }, []);
 
-  const staff = isStaff(profile);
+  const main = isMainHead(profile);
   const head = isHead(profile);
-  const main = profile?.role === 'main_head';
+  const vol = isVolunteer(profile);
 
   const items: NavItem[] = [
-    { to: '/', label: 'Dashboard', emoji: '🏠', show: staff },
-    { to: '/distribution', label: 'Distribute', emoji: '🎁', show: staff },
-    { to: '/issues', label: 'Issues & stock', emoji: '📦', show: head },
-    { to: '/members', label: 'Balaks & Balikas', emoji: '🧒', show: staff },
-    { to: '/approvals', label: 'Approvals', emoji: '✅', show: head },
-    { to: '/requests', label: 'Help requests', emoji: '💬', show: head },
-    { to: '/registration', label: 'Registration', emoji: '📝', show: main },
-    { to: '/areas', label: 'Areas', emoji: '📍', show: head },
-    { to: '/users', label: 'Team & roles', emoji: '👥', show: main },
-    { to: '/activity', label: 'Activity log', emoji: '🕑', show: main },
-    { to: '/my-books', label: t('myBooks'), emoji: '📚', show: true },
+    { to: '/', label: 'Dashboard', emoji: '🏠', show: true },
+    { to: '/balaks', label: 'Balak List', emoji: '👦', show: main },
+    { to: '/balikas', label: 'Balika List', emoji: '👧', show: head },
+    { to: '/register-member', label: 'Register Member', emoji: '📝', show: main },
+    { to: '/volunteers', label: 'Volunteers', emoji: '🙋', show: main },
+    { to: '/distribution', label: 'Book Distribution', emoji: '🎁', show: head },
+    { to: '/registration', label: 'Annual Registration', emoji: '📅', show: main },
+    { to: '/reports', label: 'Excel Reports', emoji: '📊', show: head },
+    { to: '/my-books', label: 'My Assigned Books', emoji: '📦', show: vol },
+    { to: '/pending', label: 'Pending Deliveries', emoji: '🤝', show: vol },
+    { to: '/completed', label: 'Completed Deliveries', emoji: '🎉', show: vol },
   ].filter((i) => i.show);
 
   const desktopLink = ({ isActive }: { isActive: boolean }) =>
@@ -73,7 +73,6 @@ export default function Layout() {
             </div>
           </NavLink>
           <div className="flex items-center gap-2">
-            <LangSwitch className="hidden sm:inline-flex" />
             <span className="hidden max-w-[10rem] truncate text-sm font-bold text-ink-600 md:inline">{profile?.full_name}</span>
             <button type="button" className="btn-outline btn-sm" onClick={signOut}>
               {t('signOut')}
@@ -95,7 +94,7 @@ export default function Layout() {
           <div className={`rounded-2xl px-4 py-2 text-sm font-bold ${online ? 'bg-sky2-100 text-sky2-700' : 'bg-sunny-100 text-sunny-700'}`}>
             {online
               ? `🔄 Syncing ${queued} saved change(s)…`
-              : `📴 You're offline. Marks you make are saved on this phone${queued ? ` (${queued} waiting)` : ''} and will sync automatically.`}
+              : `📴 You're offline. Changes you make are saved on this phone${queued ? ` (${queued} waiting)` : ''} and will sync automatically.`}
           </div>
         </div>
       )}
@@ -108,9 +107,6 @@ export default function Layout() {
               {i.label}
             </NavLink>
           ))}
-          <div className="pt-4">
-            <LangSwitch />
-          </div>
         </nav>
         <main className="min-w-0 flex-1 space-y-6">
           <Outlet />

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
-import { EmptyState, Modal, PageHeader, Pill, ProgressBar, Spinner } from '../components/ui';
+import { EmptyState, Modal, Pill, ProgressBar, Spinner } from '../components/ui';
 import { formatDate } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import { CATEGORY_LABEL, issueLabel, MONTHS, type Category, type Issue, type Language, type StockReceipt } from '../lib/types';
@@ -71,19 +71,21 @@ export default function Issues() {
             issue.seq_no >= s.start_issue_seq &&
             issue.seq_no <= s.start_issue_seq + s.total_issues - 1,
         ).length;
-    const collected = rows.filter((d) => d.status !== 'pending').length;
-    return { received, qty, eligible, collected, pending: rows.length - collected };
+    const collected = rows.filter((d) => d.status === 'given' || d.status === 'delivered').length;
+    const withVolunteer = rows.filter((d) => d.status === 'given_to_volunteer').length;
+    return { received, qty, eligible, collected, withVolunteer, pending: rows.length - collected - withVolunteer };
   }
+
+  const st0 = (issue: Issue) => stock.some((r) => r.issue_id === issue.id);
 
   return (
     <>
-      <PageHeader
-        emoji="📦"
-        tone="sunny"
-        title="Issues & stock"
-        subtitle="Add each new issue, then record the books received from the Karyalaya. The distribution list is made automatically."
-        actions={<button type="button" className="btn-primary" onClick={() => setShowAdd(true)}>➕ New issue</button>}
-      />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-semibold text-ink-500">
+          Add each new issue, then record the books received from the Karyalaya. Everyone due that book then appears under “Hand out books”.
+        </p>
+        <button type="button" className="btn-primary" onClick={() => setShowAdd(true)}>➕ New issue</button>
+      </div>
 
       <div className="flex gap-2">
         {(['gu', 'en'] as Language[]).map((l) => (
@@ -116,7 +118,7 @@ export default function Issues() {
               </div>
               <div className="flex gap-2">
                 <button type="button" className="btn-sky btn-sm" onClick={() => setStockFor(issue)}>📥 Record stock</button>
-                <Link to={`/distribution?issue=${issue.id}`} className="btn-green btn-sm">🎁 Distribute</Link>
+                {st0(issue) && <Link to={`/distribution?issue=${issue.id}`} className="btn-green btn-sm">🎁 Hand out</Link>}
               </div>
             </div>
 
@@ -137,10 +139,11 @@ export default function Issues() {
                       <Pill tone="leaf">Exact count</Pill>
                     )}
                   </div>
-                  <div className="grid grid-cols-4 gap-2 text-center text-sm">
+                  <div className="grid grid-cols-5 gap-2 text-center text-sm">
                     <div><div className="text-2xl font-extrabold">{st.eligible}</div><div className="font-bold text-ink-500">eligible</div></div>
                     <div><div className="text-2xl font-extrabold">{st.qty}</div><div className="font-bold text-ink-500">received</div></div>
-                    <div><div className="text-2xl font-extrabold text-leaf-600">{st.collected}</div><div className="font-bold text-ink-500">given</div></div>
+                    <div><div className="text-2xl font-extrabold text-sky2-600">{st.withVolunteer}</div><div className="font-bold text-ink-500">with volunteers</div></div>
+                    <div><div className="text-2xl font-extrabold text-leaf-600">{st.collected}</div><div className="font-bold text-ink-500">reached child</div></div>
                     <div><div className="text-2xl font-extrabold text-saffron-600">{st.pending}</div><div className="font-bold text-ink-500">pending</div></div>
                   </div>
                   {st.received.length > 0 && (
@@ -259,7 +262,7 @@ function StockModal({ issue, sides, onClose, onSaved }: { issue: Issue | null; s
     <Modal open={issue !== null} onClose={onClose} title={title}>
       <form onSubmit={save} className="space-y-3">
         <p className="text-sm font-semibold text-ink-500">
-          Recording stock creates a pending entry for everyone eligible for this issue. You can record more than once if books arrive in parts.
+          Recording books creates a pending entry for everyone due this issue. You can record more than once if books arrive in parts.
         </p>
         {sides.length > 1 && (
           <div className="flex gap-2">

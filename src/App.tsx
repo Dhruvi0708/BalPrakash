@@ -1,49 +1,69 @@
 import type { JSX } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider, isHead, isStaff, useAuth } from './auth/AuthProvider';
+import { AuthProvider, isHead, isMainHead, isVolunteer, useAuth } from './auth/AuthProvider';
 import { BookBuddy } from './components/Art';
 import Layout from './components/Layout';
 import { Spinner } from './components/ui';
 import { I18nProvider } from './lib/i18n';
 import { supabaseConfigured } from './lib/supabase';
-import Activity from './pages/Activity';
-import Approvals from './pages/Approvals';
-import Areas from './pages/Areas';
+import AnnualRegistration from './pages/AnnualRegistration';
 import Dashboard from './pages/Dashboard';
 import Distribution from './pages/Distribution';
-import Issues from './pages/Issues';
 import Login from './pages/Login';
-import Members from './pages/Members';
-import MyBooks from './pages/MyBooks';
-import Register from './pages/Register';
-import RegistrationWindows from './pages/RegistrationWindows';
-import Requests from './pages/Requests';
-import Users from './pages/Users';
+import MemberList from './pages/MemberList';
+import RegisterMember from './pages/RegisterMember';
+import Reports from './pages/Reports';
+import { MyDeliveries, VolunteerHome } from './pages/VolunteerPages';
+import Volunteers from './pages/Volunteers';
+
+function NotOnTeam() {
+  const { profile, signOut, refreshProfile } = useAuth();
+  return (
+    <div className="mx-auto max-w-lg p-8">
+      <div className="card space-y-3 text-center">
+        <BookBuddy className="mx-auto h-24 w-24" mood="sleepy" />
+        <h1 className="text-xl">You're not on the team yet</h1>
+        <p className="text-sm font-semibold text-ink-500">
+          Ask the Main Head to add you as a volunteer with mobile number <b>{profile?.phone ?? 'you signed up with'}</b>. Once added, this page opens your
+          books automatically.
+        </p>
+        <div className="flex justify-center gap-2">
+          <button type="button" className="btn-primary" onClick={() => void refreshProfile()}>🔄 Check again</button>
+          <button type="button" className="btn-outline" onClick={() => void signOut()}>Sign out</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SignedInRoutes() {
   const { session, profile, loading } = useAuth();
 
   if (loading) return <div className="flex min-h-screen items-center justify-center"><Spinner /></div>;
   if (!session) return <Login />;
+  if (!profile) return <div className="flex min-h-screen items-center justify-center"><Spinner /></div>;
+  if (!isHead(profile) && !isVolunteer(profile)) return <NotOnTeam />;
 
-  const staff = isStaff(profile);
+  const main = isMainHead(profile);
   const head = isHead(profile);
-  const main = profile?.role === 'main_head';
+  const vol = isVolunteer(profile);
   const guard = (ok: boolean, el: JSX.Element) => (ok ? el : <Navigate to="/" replace />);
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={staff ? <Dashboard /> : <Navigate to="/my-books" replace />} />
-        <Route path="distribution" element={guard(staff, <Distribution />)} />
-        <Route path="issues" element={guard(head, <Issues />)} />
-        <Route path="members" element={guard(staff, <Members />)} />
-        <Route path="approvals" element={guard(head, <Approvals />)} />
-        <Route path="requests" element={guard(head, <Requests />)} />
-        <Route path="areas" element={guard(head, <Areas />)} />
-        <Route path="registration" element={guard(main, <RegistrationWindows />)} />
-        <Route path="users" element={guard(main, <Users />)} />
-        <Route path="activity" element={guard(main, <Activity />)} />
-        <Route path="my-books" element={<MyBooks />} />
+        <Route index element={vol ? <VolunteerHome /> : <Dashboard />} />
+        {/* Heads */}
+        <Route path="balaks" element={guard(main, <MemberList category="balak" />)} />
+        <Route path="balikas" element={guard(head, <MemberList category="balika" />)} />
+        <Route path="register-member" element={guard(main, <RegisterMember />)} />
+        <Route path="volunteers" element={guard(main, <Volunteers />)} />
+        <Route path="distribution" element={guard(head, <Distribution />)} />
+        <Route path="registration" element={guard(main, <AnnualRegistration />)} />
+        <Route path="reports" element={guard(head, <Reports />)} />
+        {/* Volunteers */}
+        <Route path="my-books" element={guard(vol, <MyDeliveries view="all" />)} />
+        <Route path="pending" element={guard(vol, <MyDeliveries view="pending" />)} />
+        <Route path="completed" element={guard(vol, <MyDeliveries view="completed" />)} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
@@ -68,11 +88,7 @@ export default function App() {
     <I18nProvider>
       <AuthProvider>
         <BrowserRouter>
-          <Routes>
-            {/* The registration form is public: no login needed. */}
-            <Route path="/register" element={<Register />} />
-            <Route path="/*" element={<SignedInRoutes />} />
-          </Routes>
+          <SignedInRoutes />
         </BrowserRouter>
       </AuthProvider>
     </I18nProvider>

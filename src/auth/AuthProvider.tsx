@@ -60,10 +60,19 @@ export function useAuth(): AuthState {
   return ctx;
 }
 
+export function isMainHead(profile: Profile | null): boolean {
+  return profile?.role === 'main_head';
+}
+
+/** Main Head or Balika Head. */
 export function isHead(profile: Profile | null): boolean {
   return profile?.role === 'main_head' || profile?.role === 'balika_head';
 }
 
+export function isVolunteer(profile: Profile | null): boolean {
+  return profile?.role === 'volunteer';
+}
+
 export function isStaff(profile: Profile | null): boolean {
-  return isHead(profile) || profile?.role === 'volunteer';
+  return isHead(profile) || isVolunteer(profile);
 }
