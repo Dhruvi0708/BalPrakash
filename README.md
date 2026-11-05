@@ -63,7 +63,9 @@ current year; earlier years and their book history stay. To register an existing
 2. **Hand out books**: pick the book, select children, then
    - **Give Book**: the head handed it straight to the child, status *Given*.
    - **Give to Volunteer**: pick a volunteer (or type a name), status *Given to Volunteer*. Not delivered yet.
-3. The volunteer opens **Pending Deliveries**, finds the child and taps **Mark as Delivered**, status *Delivered*.
+3. **Month-wise** shows each month's books (Gujarati and English) with how many are pending, given, with volunteers
+   and delivered, plus a total for the year. Tap a row to hand that book out.
+4. The volunteer opens **Pending Deliveries**, finds the child and taps **Mark as Delivered**, status *Delivered*.
 
 Every change (who, when, which volunteer) is kept in `distribution_events`; **Undo** moves one step back and is recorded too.
 Changes made without signal are saved on the phone and sent when it's back online.

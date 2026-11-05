@@ -10,12 +10,13 @@ import { undoBookStatus } from '../lib/offline';
 import { supabase } from '../lib/supabase';
 import { issueLabel, STATUS_EMOJI, STATUS_LABEL, type Area, type BookRow, type BookStatus, type Category, type Issue } from '../lib/types';
 import Issues from './Issues';
+import MonthWise from './MonthWise';
 
 const STATUSES: BookStatus[] = ['pending', 'given_to_volunteer', 'given', 'delivered'];
 
 export default function Distribution() {
   const [params, setParams] = useSearchParams();
-  const tab = params.get('tab') === 'stock' ? 'stock' : 'hand';
+  const tab = params.get('tab') === 'stock' ? 'stock' : params.get('tab') === 'months' ? 'months' : 'hand';
 
   return (
     <>
@@ -25,15 +26,18 @@ export default function Distribution() {
         title="Book Distribution"
         subtitle="Give books directly to children, or hand them to a volunteer who delivers them."
       />
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button type="button" className={`btn ${tab === 'hand' ? 'bg-ink-800 text-white' : 'btn-outline'}`} onClick={() => setParams({})}>
           🎁 Hand out books
+        </button>
+        <button type="button" className={`btn ${tab === 'months' ? 'bg-ink-800 text-white' : 'btn-outline'}`} onClick={() => setParams({ tab: 'months' })}>
+          📅 Month-wise
         </button>
         <button type="button" className={`btn ${tab === 'stock' ? 'bg-ink-800 text-white' : 'btn-outline'}`} onClick={() => setParams({ tab: 'stock' })}>
           📦 Books received
         </button>
       </div>
-      {tab === 'hand' ? <HandOut /> : <Issues />}
+      {tab === 'hand' ? <HandOut /> : tab === 'months' ? <MonthWise /> : <Issues />}
     </>
   );
 }

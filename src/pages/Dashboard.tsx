@@ -118,10 +118,11 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {[
           { to: '/register-member', emoji: '📝', label: 'Register Member', tone: 'bg-leaf-100 text-leaf-700', show: main },
           { to: '/distribution', emoji: '🎁', label: 'Book Distribution', tone: 'bg-sunny-100 text-sunny-700', show: true },
+          { to: '/distribution?tab=months', emoji: '📅', label: 'Month-wise', tone: 'bg-grape-100 text-grape-700', show: true },
           { to: main ? '/balaks' : '/balikas', emoji: main ? '👦' : '👧', label: main ? 'Balak List' : 'Balika List', tone: 'bg-sky2-100 text-sky2-700', show: true },
           { to: '/reports', emoji: '📊', label: 'Excel Reports', tone: 'bg-bubble-100 text-bubble-700', show: true },
         ]
