@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { PageHeader } from '../components/ui';
 import { formatDateTime, toLocalInput } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import type { RegistrationWindow } from '../lib/types';
@@ -9,9 +10,9 @@ function statusOf(w: RegistrationWindow, now: Date): 'open' | 'upcoming' | 'clos
 }
 
 const STATUS_STYLE = {
-  open: 'bg-green-100 text-green-800',
-  upcoming: 'bg-sky-100 text-sky-800',
-  closed: 'bg-slate-100 text-slate-600',
+  open: 'bg-leaf-100 text-leaf-700',
+  upcoming: 'bg-sky2-100 text-sky2-700',
+  closed: 'bg-ink-800/5 text-ink-500',
 };
 
 export default function RegistrationWindows() {
@@ -74,26 +75,26 @@ export default function RegistrationWindows() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Registration</h1>
-        <p className="text-sm text-slate-500">
-          While a window is open, anyone can register on the public form. Entries wait in Approvals until a head verifies the payment.
-        </p>
-      </div>
+      <PageHeader
+        emoji="📝"
+        tone="bubble"
+        title="Registration"
+        subtitle="While a window is open, anyone can register on the public form. Entries wait in Approvals until a head verifies the payment."
+      />
 
-      <div className="card flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-4xl bg-gradient-to-r from-bubble-400 to-grape-500 p-5 text-white shadow-soft">
         <div className="min-w-0">
-          <div className="text-sm text-slate-500">Public registration link</div>
-          <div className="truncate font-mono text-sm">{link}</div>
+          <div className="text-sm font-bold opacity-90">🔗 Public registration link</div>
+          <div className="truncate font-mono text-lg font-bold">{link}</div>
         </div>
         <div className="flex gap-2">
-          <button type="button" className="btn-outline" onClick={copyLink}>{copied ? 'Copied' : 'Copy link'}</button>
-          <a className="btn-primary" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">Share on WhatsApp</a>
+          <button type="button" className="btn-outline" onClick={copyLink}>{copied ? '✅ Copied' : '📋 Copy link'}</button>
+          <a className="btn-green" href={`https://wa.me/?text=${shareText}`} target="_blank" rel="noreferrer">💬 Share on WhatsApp</a>
         </div>
       </div>
 
       <form onSubmit={create} className="card grid gap-3 sm:grid-cols-2">
-        <div className="font-medium sm:col-span-2">Open a new registration window</div>
+        <div className="text-lg font-extrabold sm:col-span-2">✨ Open a new registration window</div>
         <div className="sm:col-span-2">
           <label className="label" htmlFor="w-title">Title *</label>
           <input id="w-title" className="input" placeholder="e.g. Registration 2027" value={title} onChange={(e) => setTitle(e.target.value)} required />
@@ -116,24 +117,24 @@ export default function RegistrationWindows() {
             onChange={(e) => setInstructions(e.target.value)}
           />
         </div>
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 sm:col-span-2">{error}</p>}
+        {error && <p className="alert-error sm:col-span-2">{error}</p>}
         <div className="sm:col-span-2">
-          <button type="submit" className="btn-primary">Save window</button>
+          <button type="submit" className="btn-primary">🚀 Save window</button>
         </div>
       </form>
 
       <div className="card p-0">
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y-2 divide-ink-800/5">
           {windows.map((w) => {
             const status = statusOf(w, now);
             return (
               <li key={w.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
                 <div>
-                  <div className="flex items-center gap-2 font-medium">
+                  <div className="flex items-center gap-2 text-lg font-extrabold">
                     {w.title}
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}>{status}</span>
+                    <span className={`chip ${STATUS_STYLE[status]}`}>{status === 'open' ? '🟢 open' : status === 'upcoming' ? '🔜 upcoming' : 'closed'}</span>
                   </div>
-                  <div className="text-sm text-slate-500">
+                  <div className="text-sm font-semibold text-ink-500">
                     {formatDateTime(w.opens_at)} → {formatDateTime(w.closes_at)}
                   </div>
                 </div>
@@ -143,7 +144,7 @@ export default function RegistrationWindows() {
               </li>
             );
           })}
-          {windows.length === 0 && <li className="px-5 py-6 text-center text-sm text-slate-500">No registration windows yet.</li>}
+          {windows.length === 0 && <li className="px-5 py-6 text-center font-bold text-ink-400">No registration windows yet.</li>}
         </ul>
       </div>
     </div>

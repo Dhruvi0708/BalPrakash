@@ -52,6 +52,20 @@ A person who signs up with the **same mobile number** sees their own books on **
 collected, when, and by whom (self or mediator), plus issues ready to collect and still to come.
 People who share a number (e.g. siblings) all appear under that login.
 
+## Distribution day
+
+1. **Issues & stock** → *New issue* (number, month, year), then *Record stock* when books arrive from the Karyalaya.
+   Everyone eligible gets a pending entry; the page shows eligible / received / short or spare / given.
+2. **Distribute** → pick the issue, filter by area, and tap **✅ Self** or **🤝 Mediator** (name, relation, mobile).
+   Select many rows to mark a whole sabha at once. **📷 Scan card** reads the QR member card with the phone camera.
+   **💬** opens WhatsApp with a ready message. Marks made without signal are saved on the phone and sync later.
+3. Subscriptions whose last issue has arrived are marked *completed* automatically; families can renew during
+   the next registration window when 2 or fewer issues are left (the renewal starts right after the current plan).
+
+Other pages: **Help requests** (families' "didn't get my book" messages), **Activity log** (Main Head),
+member **QR cards** (print from Balaks & Balikas → Cards), CSV export everywhere, and English / ગુજરાતી / हिंदी
+for the pages families use. The app can be installed on a phone (Add to Home screen).
+
 ## Issue numbering
 
 Issues are numbered per language with a running `seq_no` (1, 2, 3 …). A subscription covers

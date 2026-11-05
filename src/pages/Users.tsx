@@ -1,93 +1,89 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthProvider';
+import { PageHeader } from '../components/ui';
 import { supabase } from '../lib/supabase';
-import { ROLE_LABEL, type AppRole, type Category, type Profile } from '../lib/types';
+import { ROLE_LABEL, type AppRole, type Area, type Category, type Profile } from '../lib/types';
+
+const ROLE_EMOJI: Record<AppRole, string> = { main_head: '👑', balika_head: '🌸', volunteer: '🙋', subscriber: '📚' };
 
 export default function Users() {
   const { profile: me } = useAuth();
   const [users, setUsers] = useState<Profile[]>([]);
+  const [areas, setAreas] = useState<Area[]>([]);
   const [search, setSearch] = useState('');
+  const [staffOnly, setStaffOnly] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
-    const { data } = await supabase.from('profiles').select('*').order('role').order('full_name');
-    setUsers((data as Profile[]) ?? []);
+    const [p, a] = await Promise.all([supabase.from('profiles').select('*').order('role').order('full_name'), supabase.from('areas').select('*').order('name')]);
+    setUsers((p.data as Profile[]) ?? []);
+    setAreas((a.data as Area[]) ?? []);
   }
 
   useEffect(() => {
     void load();
   }, []);
 
-  async function save(u: Profile, role: AppRole, category: Category | null) {
+  async function save(u: Profile, patch: Partial<Pick<Profile, 'role' | 'category' | 'area_id'>>) {
     setError(null);
+    const role = patch.role ?? u.role;
+    const category = role === 'volunteer' ? (patch.category !== undefined ? patch.category : u.category) : role === 'balika_head' ? 'balika' : null;
     const { error } = await supabase
       .from('profiles')
-      .update({ role, category: role === 'volunteer' ? category : role === 'balika_head' ? 'balika' : null })
+      .update({ role, category, area_id: patch.area_id !== undefined ? patch.area_id : u.area_id })
       .eq('id', u.id);
     if (error) setError(error.message);
     void load();
   }
 
   const q = search.trim().toLowerCase();
-  const shown = users.filter((u) => !q || (u.full_name ?? '').toLowerCase().includes(q) || (u.phone ?? '').includes(q));
+  const shown = users.filter(
+    (u) => (!staffOnly || u.role !== 'subscriber') && (!q || (u.full_name ?? '').toLowerCase().includes(q) || (u.phone ?? '').includes(q)),
+  );
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Team & roles</h1>
-        <p className="text-sm text-slate-500">
-          Ask a sevak to create an account first, then give them a role here. Volunteers only see their own side.
-        </p>
+    <>
+      <PageHeader emoji="👥" tone="grape" title="Team & roles" subtitle="Ask a sevak to create an account first, then give them a role. Volunteers only see their own side and start on their own area." />
+      <div className="flex flex-wrap gap-2">
+        <input className="input max-w-xs" placeholder="🔎 Name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
+        <button type="button" className={`btn btn-sm ${staffOnly ? 'bg-ink-800 text-white' : 'btn-outline'}`} onClick={() => setStaffOnly(!staffOnly)}>
+          Team only
+        </button>
       </div>
-      <input className="input max-w-xs" placeholder="Search name or phone" value={search} onChange={(e) => setSearch(e.target.value)} />
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      <div className="card overflow-x-auto p-0">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b bg-slate-50 text-xs uppercase text-slate-500">
-            <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Phone</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Side (volunteers)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {shown.map((u) => (
-              <tr key={u.id}>
-                <td className="px-4 py-3">{u.full_name ?? '—'}</td>
-                <td className="px-4 py-3">{u.phone ?? '—'}</td>
-                <td className="px-4 py-3">
-                  <select
-                    className="input w-auto"
-                    value={u.role}
-                    disabled={u.id === me?.id}
-                    onChange={(e) => save(u, e.target.value as AppRole, u.category)}
-                  >
-                    {(Object.keys(ROLE_LABEL) as AppRole[]).map((r) => (
-                      <option key={r} value={r}>{ROLE_LABEL[r]}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-4 py-3">
-                  {u.role === 'volunteer' ? (
-                    <select
-                      className="input w-auto"
-                      value={u.category ?? ''}
-                      onChange={(e) => save(u, u.role, (e.target.value || null) as Category | null)}
-                    >
-                      <option value="">Not set</option>
-                      <option value="balak">Balak</option>
-                      <option value="balika">Balika</option>
-                    </select>
-                  ) : (
-                    <span className="text-slate-400">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {error && <p className="alert-error">{error}</p>}
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {shown.map((u) => (
+          <div key={u.id} className="card space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-grape-50 text-2xl">{ROLE_EMOJI[u.role]}</span>
+              <div className="min-w-0">
+                <div className="truncate text-lg font-extrabold">{u.full_name ?? '—'}</div>
+                <div className="text-sm font-semibold text-ink-500">{u.phone ?? 'Google account'}</div>
+              </div>
+            </div>
+            <select className="input" value={u.role} disabled={u.id === me?.id} onChange={(e) => save(u, { role: e.target.value as AppRole })} aria-label="Role">
+              {(Object.keys(ROLE_LABEL) as AppRole[]).map((r) => (
+                <option key={r} value={r}>{ROLE_EMOJI[r]} {ROLE_LABEL[r]}</option>
+              ))}
+            </select>
+            {u.role === 'volunteer' && (
+              <div className="grid grid-cols-2 gap-2">
+                <select className="input" value={u.category ?? ''} onChange={(e) => save(u, { category: (e.target.value || null) as Category | null })} aria-label="Side">
+                  <option value="">Side not set</option>
+                  <option value="balak">👦 Balak</option>
+                  <option value="balika">👧 Balika</option>
+                </select>
+                <select className="input" value={u.area_id ?? ''} onChange={(e) => save(u, { area_id: e.target.value ? Number(e.target.value) : null })} aria-label="Area">
+                  <option value="">Any area</option>
+                  {areas.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-    </div>
+    </>
   );
 }

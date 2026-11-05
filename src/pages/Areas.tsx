@@ -1,7 +1,10 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { PageHeader } from '../components/ui';
 import { downloadCsv, parseCsv } from '../lib/csv';
 import { supabase } from '../lib/supabase';
 import type { Area } from '../lib/types';
+
+const AREA_COLORS = ['bg-saffron-100', 'bg-sky2-100', 'bg-leaf-100', 'bg-bubble-100', 'bg-grape-100', 'bg-sunny-100'];
 
 export default function Areas() {
   const [areas, setAreas] = useState<Area[]>([]);
@@ -48,54 +51,45 @@ export default function Areas() {
   }
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-xl font-semibold">Areas / sabhas</h1>
-        <p className="text-sm text-slate-500">Used to group people and split distribution lists.</p>
-      </div>
+    <>
+      <PageHeader emoji="📍" tone="leaf" title="Areas / sabhas" subtitle="Used to group people and split distribution lists by locality." />
 
       <div className="grid gap-4 md:grid-cols-2">
         <form onSubmit={addOne} className="card space-y-3">
-          <div className="font-medium">Add an area</div>
+          <div className="text-lg font-extrabold">➕ Add an area</div>
           <input className="input" placeholder="e.g. Mayur Vihar" value={name} onChange={(e) => setName(e.target.value)} required />
           <button className="btn-primary" type="submit">Add</button>
         </form>
 
         <div className="card space-y-3">
-          <div className="font-medium">Upload a list (CSV)</div>
-          <p className="text-sm text-slate-500">One column called <code>name</code>. Duplicates are skipped.</p>
+          <div className="text-lg font-extrabold">📄 Upload a list (CSV)</div>
+          <p className="text-sm font-semibold text-ink-500">One column called <code>name</code>. Duplicates are skipped.</p>
           <div className="flex flex-wrap gap-2">
-            <label className="btn-primary cursor-pointer">
+            <label className="btn-sky cursor-pointer">
               Choose CSV file
               <input type="file" accept=".csv,text/csv" className="hidden" onChange={upload} />
             </label>
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={() => downloadCsv('areas-template.csv', [['name'], ['Mayur Vihar'], ['Dwarka']])}
-            >
+            <button type="button" className="btn-outline" onClick={() => downloadCsv('areas-template.csv', [['name'], ['Mayur Vihar'], ['Dwarka']])}>
               Download template
             </button>
           </div>
         </div>
       </div>
 
-      {message && <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p>}
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {message && <p className="alert-ok">{message}</p>}
+      {error && <p className="alert-error">{error}</p>}
 
-      <div className="card p-0">
-        <ul className="divide-y divide-slate-100">
-          {areas.map((a) => (
-            <li key={a.id} className="flex items-center justify-between px-5 py-3">
-              <span className={a.is_active ? '' : 'text-slate-400 line-through'}>{a.name}</span>
-              <button type="button" className="text-sm text-saffron-700 hover:underline" onClick={() => toggle(a)}>
-                {a.is_active ? 'Deactivate' : 'Activate'}
-              </button>
-            </li>
-          ))}
-          {areas.length === 0 && <li className="px-5 py-6 text-center text-sm text-slate-500">No areas yet.</li>}
-        </ul>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {areas.map((a, i) => (
+          <div key={a.id} className={`flex flex-col justify-between gap-2 rounded-4xl border-2 border-white p-4 shadow-pop ${a.is_active ? AREA_COLORS[i % AREA_COLORS.length] : 'bg-ink-800/5'}`}>
+            <span className={`text-lg font-extrabold ${a.is_active ? '' : 'text-ink-400 line-through'}`}>📍 {a.name}</span>
+            <button type="button" className="self-start text-sm font-bold text-ink-500 hover:underline" onClick={() => toggle(a)}>
+              {a.is_active ? 'Deactivate' : 'Activate'}
+            </button>
+          </div>
+        ))}
+        {areas.length === 0 && <div className="col-span-full text-center font-bold text-ink-400">No areas yet.</div>}
       </div>
-    </div>
+    </>
   );
 }

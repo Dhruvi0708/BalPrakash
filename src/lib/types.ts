@@ -35,7 +35,10 @@ export interface Distribution {
   status: 'pending' | 'self' | 'mediator';
   collected_by_name: string | null;
   mediator_relation: string | null;
+  mediator_phone: string | null;
   handed_on: string | null;
+  handed_by: string | null;
+  notes: string | null;
 }
 
 export interface Subscription {
@@ -75,7 +78,41 @@ export interface Member {
   area_id: number | null;
   address: string | null;
   dob: string | null;
+  notes: string | null;
+  card_code: string;
   source: RecordSource;
+}
+
+export interface StockReceipt {
+  id: number;
+  issue_id: number;
+  category: Category;
+  quantity: number;
+  received_on: string;
+  notes: string | null;
+}
+
+export interface HelpRequest {
+  id: number;
+  member_id: number;
+  message: string;
+  status: 'open' | 'resolved';
+  response: string | null;
+  created_at: string;
+  resolved_at: string | null;
+}
+
+export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export function issueLabel(issue: Pick<Issue, 'seq_no' | 'issue_month' | 'issue_year' | 'title'>): string {
+  const when = issue.issue_month && issue.issue_year ? `${MONTHS[issue.issue_month - 1]} ${issue.issue_year}` : '';
+  const name = issue.title || `Issue ${issue.seq_no}`;
+  return when ? `${name} · ${when}` : name;
+}
+
+/** Last issue number covered by a subscription. */
+export function endSeq(s: Pick<Subscription, 'start_issue_seq' | 'total_issues'>): number {
+  return s.start_issue_seq + s.total_issues - 1;
 }
 
 export interface MemberRow extends Member {
